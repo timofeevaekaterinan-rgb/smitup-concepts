@@ -467,14 +467,44 @@ const defs = document.querySelector('#scene defs');
 const LL = $('#lL'), LR = $('#lR');
 // половины: px-рамка картинки, внутренний край букв (к маскоту) и куда его поставить в мире
 const HALVES = [
-  { el: LL, w: $('#lwL'), src: '../assets/scene/letters-l.webp', px: [90, 440, 940, 850], edge: 888, to: 318 },   // «СМИ» – правый край «И»
-  { el: LR, w: $('#lwR'), src: '../assets/scene/letters-r.webp', px: [940, 440, 1720, 850], edge: 990, to: 742 }, // «ТАП» – левый край «Т»
+  { el: LL, w: $('#lwL'), src: '../assets/scene/letters-l.webp', px: [90, 440, 940, 850], edge: 888, to: 318,
+    v6: { src: '../assets/scene/letters-l-v6.webp', box: [89.1, 527.1, 940.4, 825.1] },
+    v5: { src: '../assets/scene/letters-l-v5.webp', box: [141.0, 383.6, 901.4, 867.6] },
+    v4: { src: '../assets/scene/letters-l-v4.webp', box: [125.3, 380.9, 900.4, 871.8] },
+    vec: { src: '../assets/scene/letters-l.svg', box: [137.9, 439.1, 918.8, 831.7] },
+    hd: { src: '../assets/scene/letters-l-hd.webp', box: [141.0, 460.8, 900.7, 805.7] } },   // «СМИ» – правый край «И»
+  { el: LR, w: $('#lwR'), src: '../assets/scene/letters-r.webp', px: [940, 440, 1720, 850], edge: 990, to: 742,
+    v6: { src: '../assets/scene/letters-r-v6.webp', box: [937.0, 326.8, 1716.5, 822.6] },
+    v5: { src: '../assets/scene/letters-r-v5.webp', box: [977.0, 377.2, 1645.0, 862.4] },
+    v4: { src: '../assets/scene/letters-r-v4.webp', box: [977.4, 380.1, 1660.1, 868.6] },
+    vec: { src: '../assets/scene/letters-r.svg', box: [959.4, 420.3, 1648.3, 816.2] },
+    hd: { src: '../assets/scene/letters-r-hd.webp', box: [977.4, 438.9, 1643.3, 811.9] } }, // «ТАП» – левый край «Т»
 ];
+// v5 (по умолчанию) – буквы от Кати «СМИТАП_оранжевый_FFAA44_прозрачный_с_тенями.png» (2164 px, фишка «100» внутри),
+// разделены по фигурам «СМИ» / «ТАП» (касаются краями); ширина и низ каждой половины – как у прежних букв.
+// ?v4 – прошлая картинка Кати; ?vec – трассировка + фишка вектором; ?gen – от нейросети; ?old – прежний растр
+// v6 (по умолчанию) – буквы с мятными тенями, вырезанные из картинки Кати «Яркий 3D-логотип СМИТАП на бирюзовом фоне»
+// и поставленные в рамки прежних букв: композиция как в опубликованной версии. ?v5 – прошлый вариант без теней на полу
+const LETTERS_MODE = Q.has('old') ? 'old' : Q.has('gen') ? 'hd' : Q.has('vec') ? 'vec' : Q.has('v4') ? 'v4' : Q.has('v5') ? 'v5' : 'v6';
 const LSCALE = .88, LIFT = 30;   // буквы чуть меньше и выше по полу – читаются дальше, за героем
 // слой тени на полу + заливка из рендера (3×), обрезанная векторным контуром – края четкие на любом экране
 HALVES.forEach((h, i) => { const [x0, y0, x1, y1] = h.px, r = { x: wx(x0), y: wy(y0), width: (x1 - x0) * U, height: (y1 - y0) * U };
-  mk('image', { href: `../assets/scene/shadow-${i ? 'r' : 'l'}.webp`, ...r }, h.el);
-  mk('image', { href: h.src, ...r, 'clip-path': `url(#clip${i ? 'R' : 'L'})` }, h.el); });
+  if (LETTERS_MODE !== 'v6') mk('image', { href: `../assets/scene/shadow-${i ? 'r' : 'l'}.webp`, ...r }, h.el);   // в v6 тени уже в картинке
+  if (LETTERS_MODE !== 'old'){ const v = h[LETTERS_MODE], [bx0, by0, bx1, by1] = v.box;
+    mk('image', { href: v.src, x: wx(bx0), y: wy(by0), width: (bx1 - bx0) * U, height: (by1 - by0) * U }, h.el); }
+  else mk('image', { href: h.src, ...r, 'clip-path': `url(#clip${i ? 'R' : 'L'})` }, h.el);
+  if (i === 0 && LETTERS_MODE === 'vec') chip100(h.el); });
+// фишка «100» у ножки «М» – вектором, на месте фишки из прежнего рендера (в трассировке ее нет)
+function chip100(parent){
+  const rg = mk('radialGradient', { id: 'chipG', cx: .38, cy: .3, r: .8 }, defs);
+  mk('stop', { offset: 0, 'stop-color': '#B9F4ED' }, rg); mk('stop', { offset: .7, 'stop-color': '#A2EAE2' }, rg); mk('stop', { offset: 1, 'stop-color': '#8BDCD3' }, rg);
+  const R = 55 * U, g = mk('g', { transform: `translate(${wx(568)} ${wy(749)}) rotate(-6)` }, parent);
+  mk('ellipse', { cx: R * .06, cy: R * .05, rx: R, ry: R, fill: '#6FC6BB' }, g);   // ребро монетки
+  mk('circle', { r: R, fill: 'url(#chipG)' }, g);
+  const t = mk('text', { y: R * .26, 'text-anchor': 'middle', 'font-family': 'Visuelt, Arial, sans-serif', 'font-weight': 500,
+    'font-size': R * .78, 'letter-spacing': -R * .03, fill: '#3A3A3A', transform: 'rotate(-6)' }, g);
+  t.textContent = '100';
+}
 const LH = HALVES;
 function layoutLetters(visW){
   const two = W < 821, fl = wy(795);
@@ -510,10 +540,24 @@ function shotFor(name, W, H){
 }
 const mixShot = (a, b, t) => ({ k: Math.exp(lerp(Math.log(a.k), Math.log(b.k), t)), cx: lerp(a.cx, b.cx, t), cy: lerp(a.cy, b.cy, t), px: lerp(a.px, b.px, t), py: lerp(a.py, b.py, t) });
 let cam = null, W = 0, H = 0, stageK = 1;
+/* картинка Кати «Яркий 3D-логотип СМИТАП на бирюзовом фоне» = вся сцена (фон, буквы с тенями, реквизит);
+   шапка из нее стерта – работает настоящая. Живые буквы и реквизит на десктопе скрыты, чтобы не задваивались.
+   Совмещено по буквам: размах «С»…«П» и низ букв = как у живых, просвет под маскота – как был. На мобильном – прежний фон и живые буквы. Включается только ?scene: композиция уезжает, по умолчанию – v6 */
+const SCENE_IMG = Q.has('scene'), bgImg = $('#bgImg');
+const BG_OLD = { href: '../assets/scene/bg.webp', x: -529, y: 270, width: 2156, height: 1066 };
+// в картинке просвет между «И» и «Т» растянут на 218 px (под маскота), сверху +170 и снизу +130 px фона
+const BG_SCENE = { href: '../assets/scene/bg-scene.webp', x: -645.5, y: 117.6, width: 2002 * 1.1236, height: 1182 * 1.1236 };
+function applySceneMode(){
+  const on = SCENE_IMG && W >= 821;
+  const b = on ? BG_SCENE : BG_OLD; for (const k in b) bgImg.setAttribute(k, b[k]);
+  $('#letters').style.display = on ? 'none' : '';
+  document.querySelectorAll('.prop').forEach(p => p.style.display = on ? 'none' : '');
+}
 function resize(){
   W = stick.clientWidth; H = stick.clientHeight;
   const s = shotFor('stage', W, H); stageK = s.k;
   layoutLetters(W / s.k);
+  applySceneMode();
 }
 addEventListener('resize', resize); resize();
 
