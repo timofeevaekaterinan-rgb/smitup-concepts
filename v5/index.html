@@ -9,7 +9,7 @@
 @font-face{font-family:"Visuelt";src:url("../assets/fonts/visuelt-regular.woff") format("woff");font-weight:400;font-display:swap}
 @font-face{font-family:"Visuelt";src:url("../assets/fonts/visuelt-medium.woff") format("woff");font-weight:500;font-display:swap}
 :root{--teal:#B0F2EB;--white:#FFFFFF;--graphite:#3A3A3A;--orange:#FFAA44;--ease:cubic-bezier(.22,1,.36,1);
-  --left:42vw;--strip:2.6vw;--cardW:min(23vw,380px)}
+  --left:42vw;--strip:2.6vw;--cardW:min(23vw,380px,calc((100vh - 230px) * .75))}   /* фото учитывает и высоту окна */
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:auto}
 body{font-family:"Visuelt",Arial,sans-serif;color:var(--graphite);background:var(--teal);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
@@ -38,15 +38,15 @@ button{font:inherit;color:inherit;cursor:pointer}
 /* ───── 6 блок – преподаватели: секция залипает, справа по скроллу выезжают панели предметов ───── */
 .tch{position:relative}
 .pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--teal)}
-.lead{position:absolute;left:0;top:0;bottom:0;width:var(--left);padding:calc(110px + 6vh) 3.4vw 5vh;display:flex;flex-direction:column;z-index:1}
+.lead{position:absolute;left:0;top:0;bottom:0;width:var(--left);padding:calc(100px + 4vh) 3.4vw 4vh;display:flex;flex-direction:column;z-index:1}
 .ttl{font-weight:500;text-transform:uppercase;line-height:.88;letter-spacing:-.04em;font-size:var(--ttlF,64px)}
 .ttl span{display:block}
 .ttl .pl{display:inline-block;margin-top:.12em;padding:.06em .18em .1em;background:var(--orange);transform:rotate(-3deg);transform-origin:left center}
-.seg{display:inline-flex;gap:4px;padding:4px;margin-top:clamp(22px,4vh,40px);border-radius:18px;background:rgba(255,255,255,.6);align-self:flex-start}
-.seg button{height:42px;padding:0 18px;border:0;border-radius:14px;background:none;font-weight:500;font-size:16px;transition:background-color .2s}
+.seg{display:inline-flex;gap:4px;padding:4px;margin-top:clamp(14px,3.4vh,40px);border-radius:18px;background:rgba(255,255,255,.6);align-self:flex-start}
+.seg button{height:clamp(34px,5vh,42px);padding:0 18px;border:0;border-radius:14px;background:none;font-weight:500;font-size:16px;transition:background-color .2s}
 .seg button.on{background:var(--graphite);color:var(--white)}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;max-width:calc(var(--left) - var(--cardW) / 2 - 6vw)}   /* не заходит под фото-карточку */
-.chips button{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px 0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.6);font-size:14px;transition:background-color .2s,transform .25s var(--ease)}
+.chips{display:flex;flex-wrap:wrap;gap:clamp(5px,.9vh,8px);margin-top:clamp(10px,2vh,18px);max-width:calc(var(--left) - var(--cardW) / 2 - 6vw)}   /* не заходит под фото-карточку */
+.chips button{display:inline-flex;align-items:center;gap:8px;height:clamp(28px,4.2vh,36px);padding:0 14px 0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.6);font-size:14px;transition:background-color .2s,transform .25s var(--ease)}
 .chips button i{width:14px;height:14px;border-radius:5px;flex:none}
 .chips button.on{background:var(--white);transform:translateY(-2px);box-shadow:0 10px 24px -12px rgba(25,105,105,.45)}
 .cnt{margin-top:auto;font-weight:500;font-size:15px;letter-spacing:.02em;display:flex;align-items:center;gap:14px}
@@ -54,18 +54,21 @@ button{font:inherit;color:inherit;cursor:pointer}
 .cnt .bar i{display:block;height:100%;background:var(--graphite);transform-origin:left;transform:scaleX(var(--pr,0))}
 .cnt small{font-weight:400;opacity:.6}
 
-.pn{position:absolute;top:0;bottom:0;left:var(--left);width:calc(100vw - var(--left));will-change:transform;box-shadow:-24px 0 48px -30px rgba(58,58,58,.35)}
-.card{position:absolute;left:calc(var(--cardW) / -2);top:50%;width:var(--cardW);aspect-ratio:3/4;margin-top:calc(var(--cardW) * -2 / 3 + 30px);border-radius:28px;overflow:hidden;background:var(--white);box-shadow:0 40px 70px -34px rgba(40,40,40,.55);will-change:transform,opacity}
+.pn{position:absolute;top:0;bottom:0;left:var(--left);width:calc(100vw - var(--left));will-change:transform}
+/* одно неподвижное место под фото – на границе колонок, поверх панелей; новое фото выезжает снизу на место прежнего */
+.cards{position:absolute;left:var(--left);top:0;bottom:0;width:0;z-index:60;pointer-events:none}
+.pn .card{display:none}
+.card{position:absolute;left:calc(var(--cardW) / -2);top:calc(50% + 43px);width:var(--cardW);aspect-ratio:3/4;margin-top:calc(var(--cardW) * -2 / 3);border-radius:28px;overflow:hidden;background:var(--white);will-change:transform,opacity}
 .card img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
 .card .stub{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:500;opacity:.9}
 .card .stub img{width:64%;height:auto;object-fit:contain}
 .card .tag{position:absolute;left:14px;bottom:14px;padding:6px 12px;border-radius:12px;background:var(--white);font-size:13px;font-weight:500}
-.body{position:absolute;inset:0;padding:calc(112px + 3vh) calc(var(--strip) * 3 + 3vw) 5vh calc(var(--cardW) / 2 + 3.4vw);display:flex;flex-direction:column}
-.sub{font-weight:500;text-transform:uppercase;letter-spacing:-.035em;line-height:.9;font-size:clamp(40px,4.4vw,76px);white-space:nowrap}
-.nm{margin-top:14px;font-weight:500;font-size:clamp(22px,1.7vw,30px);display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.body{position:absolute;inset:0;padding:calc(100px + 2.4vh) calc(var(--strip) * 3 + 3vw) 5vh calc(var(--cardW) / 2 + 3.4vw);display:flex;flex-direction:column}
+.sub{font-weight:500;text-transform:uppercase;letter-spacing:-.035em;line-height:.9;font-size:clamp(32px,min(4.4vw,8vh),76px);white-space:nowrap}
+.nm{margin-top:clamp(8px,1.6vh,14px);font-weight:500;font-size:clamp(18px,min(1.7vw,3.3vh),30px);display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
 .nm small{font-weight:400;font-size:14px;padding:4px 10px;border-radius:10px;background:rgba(255,255,255,.65)}
-.q{margin-top:14px;font-size:clamp(15px,1.12vw,18px);line-height:1.45;max-width:36em}
-.facts{list-style:none;margin-top:18px;display:grid;gap:8px;font-size:clamp(14px,.98vw,16px);line-height:1.35}
+.q{margin-top:clamp(8px,1.6vh,14px);font-size:clamp(13px,min(1.12vw,2.15vh),18px);line-height:1.45;max-width:36em}
+.facts{list-style:none;margin-top:clamp(10px,2vh,18px);display:grid;gap:clamp(4px,.9vh,8px);font-size:clamp(12.5px,min(.98vw,1.95vh),16px);line-height:1.35}
 .facts li{position:relative;padding-left:22px}
 .facts li::before{content:"";position:absolute;left:0;top:.42em;width:10px;height:10px;border-radius:3px;background:var(--acc)}
 .btns{margin-top:auto;padding-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
@@ -83,7 +86,8 @@ button{font:inherit;color:inherit;cursor:pointer}
   .lead{position:relative;width:100%;padding:120px 20px 24px}
   .chips{max-width:none}.cnt{display:none}
   .pns{position:relative}
-  .pn{position:relative;left:auto;width:100%;transform:none!important;box-shadow:none}
+  .pn{position:relative;left:auto;width:100%;transform:none!important}
+  .cards{display:none}.pn .card{display:block}
   .card{position:relative;left:auto;top:auto;margin:24px auto 0;width:min(78vw,360px);transform:none!important;opacity:1!important}
   .body{position:relative;padding:20px 20px 40px}
 }
@@ -110,12 +114,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 <section class="tch" id="tch" aria-label="Преподаватели">
   <div class="pin">
     <div class="lead">
-      <h2 class="ttl" id="ttl"><span>Преподаватели,</span><span>которые влюбят</span><b class="pl">в&nbsp;учебу</b></h2>
+      <h2 class="ttl" id="ttl"><span>Преподаватели,</span><span>которые</span><span>влюбят</span><b class="pl">в&nbsp;учебу</b></h2>
       <div class="seg" id="seg" role="tablist" aria-label="Класс"></div>
       <div class="chips" id="chips" aria-label="Предметы"></div>
       <div class="cnt"><span id="num">01 / 11</span><span class="bar"><i id="bar"></i></span><small>листай, чтобы познакомиться</small></div>
     </div>
     <div class="pns" id="pns"></div>
+    <div class="cards" id="cards" aria-hidden="true"></div>
   </div>
 </section>
 <section class="after">дальше – 7 блок «Репетитор vs СМИТАП»</section>
@@ -202,7 +207,7 @@ function build(){
     const photo = t.ph ? `<img src="../assets/photo/${t.ph}" alt="${t.n}">`
       : `<div class="stub" style="background:${lt}"><img src="../assets/mascot/${['point','peace','please','cool'][i % 4]}.svg" alt=""><span>фото скоро</span></div>`;
     return `<article class="pn" style="background:${lt};--acc:${dk};z-index:${10 + i}">
-      <div class="card" style="--rot:${rot}deg">${photo}<span class="tag">${t.ex} · ${t.sub.toLowerCase()}</span></div>
+      <div class="card">${photo}<span class="tag">${t.ex} · ${t.sub.toLowerCase()}</span></div>
       <div class="body">
         <h3 class="sub" style="color:${contrast(dk, lt) >= 3 ? dk : '#3A3A3A'}">${t.sub}</h3>
         <div class="nm">${t.n}<small>${grade} класс · ${t.ex}</small></div>
@@ -211,7 +216,10 @@ function build(){
         <div class="btns"><a class="pill dark" href="#">Выбрать предмет <span class="go"><svg><use href="#i-arrow"/></svg></span></a><a class="pill light" href="#">Попробовать бесплатно</a>
           <span class="soc"><a href="#" aria-label="Телеграм"><svg viewBox="0 0 24 24">${ICONS.tg}</svg></a><a href="#" aria-label="Ютуб"><svg viewBox="0 0 24 24">${ICONS.yt}</svg></a><a href="#" aria-label="Тикток"><svg viewBox="0 0 24 24">${ICONS.tt}</svg></a></span></div>
       </div></article>`; }).join('');
-  P = [...document.querySelectorAll('.pn')].map(el => ({ el, card: el.querySelector('.card'), rot: parseFloat(el.querySelector('.card').style.getPropertyValue('--rot')) }));
+  // фото на десктопе – в отдельном неподвижном месте поверх панелей (копии внутри панелей – для мобильного)
+  $('#cards').innerHTML = [...document.querySelectorAll('.pn .card')].map((c, i) => `<div class="card" style="z-index:${i + 1}">${c.innerHTML}</div>`).join('');
+  const cards = [...document.querySelectorAll('#cards .card')];
+  P = [...document.querySelectorAll('.pn')].map((el, i) => ({ el, card: cards[i], rot: i % 2 ? 3 : -4 }));
   $('#tch').style.height = innerWidth > 820 ? `${(list.length - 1) * STEP * 100 + 100}vh` : '';   // залипание: 100vh + прокрутка на все панели
   fitTitle(); frame();
 }
@@ -223,8 +231,9 @@ function fitTitle(){
   fitSubs();
   const el = $('#ttl'); el.style.setProperty('--ttlF', '100px');
   const w = Math.max(...[...el.children].map(s => { const r = document.createRange(); r.selectNodeContents(s); return r.getBoundingClientRect().width; }));
-  const colW = $('.lead').clientWidth - parseFloat(getComputedStyle($('.lead')).paddingLeft) * 2;
-  el.style.setProperty('--ttlF', Math.min(100 * colW / w, innerHeight * .1) + 'px');
+  const lead = $('.lead'), pad = parseFloat(getComputedStyle(lead).paddingLeft), cardW = innerWidth > 820 ? $('#cards .card')?.offsetWidth || 0 : 0;
+  const colW = (innerWidth > 820 ? lead.clientWidth - cardW / 2 - pad * 1.6 : lead.clientWidth - pad * 2);   // до края фото, не под него
+  el.style.setProperty('--ttlF', Math.min(100 * colW / w, innerHeight * .095) + 'px');
 }
 function progress(){
   if (Q.has('p')) return clamp(+Q.get('p'), 0, list.length - 1);
@@ -242,10 +251,10 @@ function frame(){
     else if (t <= MAXS + 1) x = Math.min(stripX(t), R) - left0;
     else x = R - left0;
     o.el.style.transform = `translateX(${x}px)`;
-    // карточка-фото приезжает вместе со своей панелью; у «корешков» и под следующей карточкой – скрыта
-    const vis = t >= 1 ? 0 : t > 0 ? 1 - t : t > -1 ? 1 : 0, ci = clamp(1 - t, 0, 1);
-    o.card.style.opacity = t >= 1 ? 0 : t > -1 ? 1 : 0;
-    o.card.style.transform = `translateX(${(1 - ease(ci)) * 60}px) rotate(${o.rot * (0.4 + .6 * ease(ci))}deg) scale(${.92 + .08 * ease(ci)})`;
+    // фото: на своем месте, пока панель активна; следующее выезжает снизу поверх, по тексту не проходит
+    const k = clamp(1 - t, 0, 1), e = ease(k);
+    o.card.style.visibility = t >= 1 || t <= -2 ? 'hidden' : 'visible';
+    o.card.style.transform = `translateY(${(1 - e) * innerHeight * .95}px) rotate(${o.rot * (1.8 - .8 * e)}deg)`;
   });
   const now = Math.round(p); if (now !== cur || !$('#chips .on')){ cur = now;
     document.querySelectorAll('#chips button').forEach((b, i) => b.classList.toggle('on', i === cur)); }
