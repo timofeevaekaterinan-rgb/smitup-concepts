@@ -102,7 +102,7 @@ h1>span{display:block}
 /* точечные элементы из сцены (строка браузера, сердце, 90+, 100) – вокруг заголовка, мягко покачиваются.
    Координаты – от центра экрана, вертикаль учитывает высокие окна; при раскрытии улетают вместе с заголовком */
 .deco{position:absolute;left:calc(50% + var(--dx));top:calc(var(--dy) + max(0px, (100vh - 95rem) / 2));z-index:4;pointer-events:none;
-  transform:translateY(var(--lift,0px));opacity:var(--fade,1);animation:deco-in .7s cubic-bezier(.3,1.5,.5,1) var(--in,.6s) backwards}
+  transform:translate(var(--mx,0px), calc(var(--lift,0px) + var(--my,0px))) rotate(var(--mr,0deg));opacity:var(--fade,1);animation:deco-in .7s cubic-bezier(.3,1.5,.5,1) var(--in,.6s) backwards}
 .deco > *{display:block;animation:float var(--d,6s) ease-in-out infinite alternate}
 @keyframes float{from{transform:translateY(-.7rem) rotate(var(--r0,0deg))}to{transform:translateY(.7rem) rotate(var(--r1,0deg))}}
 @keyframes deco-in{from{opacity:0;scale:.6}}
@@ -269,10 +269,10 @@ h1>span{display:block}
 
 
   <!-- точечные элементы сцены вокруг заголовка -->
-  <div class="deco" style="--dx:-74rem;--dy:23rem;--in:.5s" aria-hidden="true"><span class="d-bar" style="--r0:-3deg;--r1:-1.5deg;--d:6.5s"><i></i><i></i><i></i><b></b></span></div>
-  <div class="deco" style="--dx:27rem;--dy:16.5rem;--in:2.6s" aria-hidden="true"><img class="d-heart" src="../assets/scene/p-heart.webp" alt="" style="--r0:-8deg;--r1:4deg;--d:4.8s"></div>
-  <div class="deco" style="--dx:66rem;--dy:14rem;--in:.8s" aria-hidden="true"><span class="d-90" style="--r0:-12deg;--r1:-7deg;--d:5.6s">90+</span></div>
-  <div class="deco" style="--dx:-60rem;--dy:44rem;--in:1s" aria-hidden="true"><span class="d-100" style="--r0:-14deg;--r1:-6deg;--d:7s">100</span></div>
+  <div class="deco" data-d=".9" style="--dx:-74rem;--dy:23rem;--in:.5s" aria-hidden="true"><span class="d-bar" style="--r0:-3deg;--r1:-1.5deg;--d:6.5s"><i></i><i></i><i></i><b></b></span></div>
+  <div class="deco" data-d="1.25" style="--dx:27rem;--dy:16.5rem;--in:2.6s" aria-hidden="true"><img class="d-heart" src="../assets/scene/p-heart.webp" alt="" style="--r0:-8deg;--r1:4deg;--d:4.8s"></div>
+  <div class="deco" data-d="1.1" style="--dx:66rem;--dy:14rem;--in:.8s" aria-hidden="true"><span class="d-90" style="--r0:-12deg;--r1:-7deg;--d:5.6s">90+</span></div>
+  <div class="deco" data-d="1" style="--dx:-60rem;--dy:44rem;--in:1s" aria-hidden="true"><span class="d-100" style="--r0:-14deg;--r1:-6deg;--d:7s">100</span></div>
   <div class="fan" id="fan"></div>
   <!-- блок 2 – достижения (ТЗ, «Главная», 2 блок), появляется, когда оранжевый заполнил экран -->
   <div class="stats" id="stats" aria-label="Достижения СМИТАП">
@@ -373,6 +373,31 @@ fan.innerHTML = CARDS.map((c, i) => {
   const lbl = c.big ? ` aria-label="${c.big.replace('&nbsp;',' ')} – ${c.small}"` : ' aria-hidden="true" tabindex="-1"';
   return `<a href="#" class="card" style="${st}"${lbl}><div class="in">${arr}${img}${stars}${txt}${sub}</div></a>`;
 }).join('');
+
+/* элементы сцены на первом экране чуть реагируют на курсор – как в версии 2:
+   уходят в сторону от курсора (параллакс, сильнее у «ближних») и мягко отталкиваются, если навести близко */
+const DECO = [...document.querySelectorAll('.deco')].map(el => ({ el, d: +el.dataset.d || 1, ox:0, oy:0 }));
+const dPtr = { x:-9999, y:-9999, nx:0, ny:0 }; let decoRaf = 0;
+function decoTick(){
+  decoRaf = 0; if (scrollY > innerHeight) return;              /* первый экран ушел – не считаем */
+  let moving = false;
+  DECO.forEach(f => {
+    const r = f.el.firstElementChild.getBoundingClientRect(), cx = r.left + r.width / 2 - f.ox, cy = r.top + r.height / 2 - f.oy;
+    let tx = -dPtr.nx * 22 * f.d, ty = -dPtr.ny * 14 * f.d;
+    const dx = cx + tx - dPtr.x, dy = cy + ty - dPtr.y, dist = Math.hypot(dx, dy), RR = 120 + r.width * .6;
+    if (dist < RR && dist > .1){ const k = Math.pow(1 - dist / RR, 2) * 45 * f.d; tx += dx / dist * k; ty += dy / dist * k; }
+    f.ox += (tx - f.ox) * .06; f.oy += (ty - f.oy) * .06;
+    if (Math.abs(tx - f.ox) + Math.abs(ty - f.oy) > .2) moving = true;
+    f.el.style.setProperty('--mx', f.ox.toFixed(1) + 'px'); f.el.style.setProperty('--my', f.oy.toFixed(1) + 'px');
+    f.el.style.setProperty('--mr', (f.ox * .08).toFixed(2) + 'deg');
+  });
+  if (moving) decoRaf = requestAnimationFrame(decoTick);
+}
+addEventListener('pointermove', e => {
+  dPtr.x = e.clientX; dPtr.y = e.clientY; dPtr.nx = e.clientX / innerWidth - .5; dPtr.ny = e.clientY / innerHeight - .5;
+  if (!decoRaf && !Q.has('shot')) decoRaf = requestAnimationFrame(decoTick);
+}, { passive:true });
+document.addEventListener('pointerleave', () => { dPtr.x = dPtr.y = -9999; dPtr.nx = dPtr.ny = 0; if (!decoRaf) decoRaf = requestAnimationFrame(decoTick); });
 
 /* маскот идет справа налево к концу средней строки: шагает (ноги попеременно, руки в противоход),
    дошел – облокачивается на буквы. Клик – машет свободной рукой */
