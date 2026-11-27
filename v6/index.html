@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>СМИТАП – главная, версия 6</title>
+<style>
+@font-face{font-family:"Visuelt";src:url("../assets/fonts/visuelt-regular.woff") format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"Visuelt";src:url("../assets/fonts/visuelt-medium.woff") format("woff");font-weight:500;font-display:swap}
+
+/* 1rem = 10px на 1920 – вся сетка масштабируется от макета 1920 (контейнер 1600) */
+:root{--mint:#B0F2EB;--white:#FFFFFF;--ink:#3A3A3A;--orange:#FFAA44;--wrap:160rem}
+html{font-size:calc(100vw / 192)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Visuelt",system-ui,sans-serif;font-weight:400;color:var(--ink);background:var(--mint);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.wrap{width:var(--wrap);margin:0 auto}
+
+/* ---------- шапка ---------- */
+.hdr{position:fixed;top:1.6rem;left:0;right:0;z-index:20}
+.hdr .wrap{display:flex;align-items:center;height:7.7rem;padding:0 1.9rem 0 4.4rem;border-radius:2.4rem;background:rgba(255,255,255,.62);border:.1rem solid rgba(255,255,255,.8);-webkit-backdrop-filter:blur(1.6rem) saturate(1.2);backdrop-filter:blur(1.6rem) saturate(1.2)}
+.logo img{display:block;height:4.4rem;width:auto}
+.nav{display:flex;gap:3.4rem;list-style:none;margin-left:auto;margin-right:auto;padding-left:6rem;font-size:1.5rem;font-weight:500}
+.nav a{transition:opacity .2s}
+.nav a:hover{opacity:.6}
+.hdr-r{display:flex;align-items:center;gap:.8rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:99rem;font-weight:500;white-space:nowrap;transition:transform .25s cubic-bezier(.2,.8,.2,1),background-color .2s,box-shadow .2s}
+.btn:active{transform:scale(.97)}
+.btn-s{height:3.9rem;padding:0 2.4rem;font-size:1.5rem}
+.btn-line{box-shadow:inset 0 0 0 .1rem rgba(58,58,58,.2)}
+.btn-line:hover{box-shadow:inset 0 0 0 .1rem var(--ink)}
+.btn-or{background:var(--orange);color:var(--ink)}
+.btn-or:hover{background:#FFB65C}
+.ic{width:3.9rem;height:3.9rem;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 .1rem rgba(58,58,58,.2);transition:box-shadow .2s}
+.ic:hover{box-shadow:inset 0 0 0 .1rem var(--ink)}
+.ic svg{width:1.8rem;height:1.8rem;fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+/* шапка над темным фоном (любая секция/слой с data-hdr="dark"): логотип белый, меню светлое, плашка темная полупрозрачная.
+   Правило на весь сайт: темным блокам ставить data-hdr="dark" – шапка переключится сама */
+.logo{position:relative}
+.logo .lw{position:absolute;inset:0;opacity:0}
+.hdr .wrap,.hdr .nav a,.hdr .btn-line,.hdr .ic,.hdr .ic svg,.logo img{transition:background-color .35s,border-color .35s,color .35s,box-shadow .35s,stroke .35s,opacity .35s}
+.hdr.on-dark .wrap{background:rgba(46,46,46,.55);border-color:rgba(255,255,255,.14)}
+.hdr.on-dark .logo .lo{opacity:0}
+.hdr.on-dark .logo .lw{opacity:1}
+.hdr.on-dark .nav a,.hdr.on-dark .btn-line{color:var(--white)}
+.hdr.on-dark .btn-line{box-shadow:inset 0 0 0 .1rem rgba(255,255,255,.35)}
+.hdr.on-dark .btn-line:hover{box-shadow:inset 0 0 0 .1rem var(--white)}
+.hdr.on-dark .ic{box-shadow:inset 0 0 0 .1rem rgba(255,255,255,.35)}
+.hdr.on-dark .ic svg{stroke:var(--white)}
+
+/* ---------- первый экран ---------- */
+/* сцена первого экрана: экран залипает, по скроллу оранжевая карточка раскрывается на весь экран.
+   Макет – 950 px высоты на 1920; на более высоких окнах лишняя высота делится: половина – над заголовком, веер прижат к низу */
+.scene{position:relative;height:calc(100vh + 110vh + 30vh + 10 * 20vh + 30vh + 90vh + 150vh);background:var(--orange)}
+.hero{position:sticky;top:0;height:100vh;overflow:hidden;padding-top:calc(15.3rem + max(0px, (100vh - 95rem) / 2));text-align:center;background:var(--mint)}
+.seg{position:relative;display:inline-flex;padding:.3rem;border-radius:99rem;background:rgba(58,58,58,.12)}
+.seg button{position:relative;z-index:1;height:4.2rem;padding:0 1.8rem;border-radius:99rem;font-size:1.5rem;font-weight:500;transition:color .3s}
+.seg button[aria-selected="true"]{color:var(--white)}
+.seg .thumb{position:absolute;top:.3rem;bottom:.3rem;left:0;border-radius:99rem;background:var(--ink);transition:transform .45s cubic-bezier(.3,1.3,.5,1),width .45s cubic-bezier(.3,1.3,.5,1)}
+
+/* по рефу: переключатель – 153 px, заголовок – 265 px, кнопки – 533 px от верха на 1920×950 */
+h1{margin:6.4rem auto 0;font-weight:500;font-size:9rem;line-height:.8;letter-spacing:-.05em}
+h1>span{display:block}
+.cta{display:flex;justify-content:center;gap:.3rem;margin-top:5.2rem}
+.btn-m{height:4.6rem;padding:0 2rem;font-size:1.5rem;box-shadow:0 0 0 .2rem rgba(58,58,58,.25)}
+.btn-dark{background:var(--ink);color:var(--white)}
+.btn-dark:hover{background:#4A4A4A}
+.swap{transition:opacity .25s}
+.is-swapping .swap{opacity:0}
+
+/* маскот из конструктора брендбука: туловище с лицом (из «Базовой позы») + руки и ноги векторными деталями.
+   Идет справа налево к концу средней строки, в конце кренится и облокачивается рукой на буквы */
+.mpin{position:relative;display:inline-block;width:0;height:0}          /* пустой inline-block: низ = базовая линия строки */
+.walker{position:absolute;left:var(--wl,-2.2rem);bottom:-.15rem;width:calc(18rem * 1160 / 1620);height:18rem;padding:0;z-index:5;cursor:pointer}
+.walker svg{display:block;width:100%;height:100%;overflow:visible}
+.walker g{transform-box:view-box}
+.w-all{transform-origin:490px 1600px;transition:transform .6s cubic-bezier(.3,1.3,.5,1)}
+.w-leg-l{transform-origin:444px 1200px}.w-leg-r{transform-origin:535px 1200px}
+.w-arm-l{transform-origin:150px 995px}.w-arm-r{transform-origin:850px 995px}
+.w-leg-l,.w-leg-r,.w-arm-l,.w-arm-r{transition:transform .55s cubic-bezier(.3,1.3,.5,1)}
+/* ходьба: шаг 0,56 с – ноги попеременно, руки в противоход, тело подпрыгивает дважды за шаг */
+.walker.walking .w-all{transform:rotate(-4deg)}
+.walker.walking .w-bob{animation:w-bob .3s ease-in-out infinite}
+.walker.walking .w-leg-l{animation:w-step .3s linear infinite alternate}
+.walker.walking .w-leg-r{animation:w-step .3s linear infinite alternate-reverse}   /* в противофазе с левой */
+.walker.walking .w-arm-l{animation:w-swing .3s ease-in-out infinite alternate-reverse}
+.walker.walking .w-arm-r{animation:w-swing .3s ease-in-out infinite alternate}
+@keyframes w-step{from{transform:rotate(30deg)}to{transform:rotate(-30deg)}}
+@keyframes w-swing{from{transform:rotate(22deg)}to{transform:rotate(-20deg)}}
+@keyframes w-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+/* финал: облокотился на буквы – крен к заголовку, рука на буквах, ноги скрещены */
+.walker.lean .w-all{transform:rotate(-15deg)}
+.walker.lean .w-arm-l{transform:rotate(80deg)}
+.walker.lean .w-arm-r{transform:rotate(-14deg)}
+.walker.lean .w-leg-r{transform:rotate(24deg)}
+.walker.lean .w-leg-l{transform:rotate(-6deg)}
+/* клик – машет свободной рукой */
+.walker.lean.wave .w-arm-r{animation:w-wave .9s ease-in-out 1}
+@keyframes w-wave{0%,100%{transform:rotate(-14deg)}25%,75%{transform:rotate(-150deg)}50%{transform:rotate(-120deg)}}
+
+/* точечные элементы из сцены (строка браузера, сердце, 90+, 100) – вокруг заголовка, мягко покачиваются.
+   Координаты – от центра экрана, вертикаль учитывает высокие окна; при раскрытии улетают вместе с заголовком */
+.deco{position:absolute;left:calc(50% + var(--dx));top:calc(var(--dy) + max(0px, (100vh - 95rem) / 2));z-index:4;pointer-events:none;
+  transform:translateY(var(--lift,0px));opacity:var(--fade,1);animation:deco-in .7s cubic-bezier(.3,1.5,.5,1) var(--in,.6s) backwards}
+.deco > *{display:block;animation:float var(--d,6s) ease-in-out infinite alternate}
+@keyframes float{from{transform:translateY(-.7rem) rotate(var(--r0,0deg))}to{transform:translateY(.7rem) rotate(var(--r1,0deg))}}
+@keyframes deco-in{from{opacity:0;scale:.6}}
+.d-bar{width:33rem;height:5.6rem;display:flex !important;align-items:center;gap:1rem;padding:0 2.6rem;border-radius:1.8rem;background:var(--white);box-shadow:0 1.6rem 3rem -1.4rem rgba(40,120,115,.45)}
+.d-bar i{width:1.5rem;height:1.5rem;border-radius:50%;background:var(--ink)}
+.d-bar b{width:15rem;height:1.2rem;margin-left:1.6rem;border-radius:99rem;background:var(--mint)}
+.d-90{padding:.9rem 2.2rem 1.1rem;border-radius:99rem;background:var(--ink);color:var(--white);font-size:2.8rem;font-weight:500;letter-spacing:-.02em;line-height:1;box-shadow:0 1.4rem 2.6rem -1.2rem rgba(40,120,115,.5)}
+.d-100{width:11rem;height:11rem;display:grid !important;place-items:center;border-radius:50%;background:var(--mint);color:var(--ink);font-size:3.4rem;font-weight:500;letter-spacing:-.03em;
+  box-shadow:inset 0 -.8rem 0 rgba(58,58,58,.08),inset 0 .5rem 0 rgba(255,255,255,.55),0 .7rem 0 #8FD8CF,0 1.8rem 2.8rem -1rem rgba(40,120,115,.5)}
+.d-heart{width:9.5rem;height:auto}
+
+/* веер тематик – раскидан, как у референса; низ карточек уходит за край экрана */
+.fan{position:absolute;left:50%;top:calc(62.5rem + max(0px, 100vh - 95rem));width:0;height:0}
+.card{position:absolute;left:0;top:0;width:44rem;height:80rem;margin-left:-22rem;transform-origin:50% 15rem;
+  transform:translate(calc(var(--x) + var(--dir,0) * var(--spread,0rem)),var(--y)) rotate(calc(var(--r) + var(--dir,0) * var(--spin,0deg)));transition:transform .9s cubic-bezier(.2,.9,.25,1.05)}
+.fan.dealt .card{transition:none}
+/* при раскрытии верх экрана (переключатель, заголовок, кнопки) разлетается вверх и гаснет */
+.hero .seg,.hero h1,.hero .cta{transform:translateY(var(--lift,0px));opacity:var(--fade,1)}
+/* раскрывающаяся оранжевая: размеры и положение ведет скрипт по скроллу */
+.card.grow{z-index:10 !important;pointer-events:none}
+.fan:not(.in) .card{transform:translate(calc(var(--x) * .3),45rem) rotate(0deg)}
+.card .in{position:relative;width:100%;height:100%;border-radius:2.4rem;overflow:hidden;background:var(--bg);color:var(--fg);
+  transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+/* картинка выше видимой части: нижний обрез фото всегда за краем первого экрана, даже у наклоненных карточек */
+.card img{position:absolute;left:0;top:0;width:100%;height:34.5rem;object-fit:cover;object-position:50% 0}
+.card .arr{position:absolute;overflow:visible}
+.card .stars{position:absolute;left:3rem;top:15.5rem;display:flex;gap:.8rem}
+.card .stars svg{width:5.4rem;height:5.4rem;fill:var(--orange)}
+.card .t{position:absolute;left:3rem;top:2.8rem;text-align:left}
+.card .t b{display:block;font-size:6.4rem;font-weight:500;letter-spacing:-.05em;line-height:.9}
+.card .t span{display:block;margin-top:.8rem;font-size:2.2rem;font-weight:500;letter-spacing:-.02em;line-height:1}
+/* подзаголовок из ТЗ – в центральной оранжевой карточке; при раскрытии гаснет */
+.card .g-sub{position:absolute;left:3.4rem;right:9.6rem;top:5rem;margin:0;text-align:center;color:var(--ink);font-size:3.1rem;font-weight:500;letter-spacing:-.035em;line-height:1.08;opacity:var(--gs,1)}
+.card:hover .in{transform:translateY(-3.2rem)}
+.card:hover{z-index:20 !important}
+
+/* ---------- блок 2: достижения – крупные цифры и подписи на раскрытом оранжевом ---------- */
+/* по скетчу: заголовок и 4 факта одной строкой сверху, скрины-марки – ниже, цифры не перекрывают */
+.stats{position:absolute;inset:0;z-index:15;padding-top:calc(13rem + max(0px, (100vh - 95rem) / 2));text-align:center;pointer-events:none}
+.stats.on{pointer-events:auto}
+.stats h2{font-size:5.6rem;font-weight:500;letter-spacing:-.045em;line-height:.95;margin-bottom:6rem}
+.st-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.st{padding:.6rem 2rem 0}
+.st:not(:last-child){border-right:.15rem solid rgba(58,58,58,.22)}
+.st .num{font-size:9rem;font-weight:500;letter-spacing:-.06em;word-spacing:.12em;line-height:.85;white-space:nowrap}
+.st .num small{font-size:.45em;letter-spacing:-.03em;margin-left:.35em}
+.st .num small.mid{margin:0 .38em 0 .5em}
+.st .cap{max-width:30rem;margin:1.4rem auto 0;font-size:2.4rem;font-weight:500;letter-spacing:-.02em;line-height:1.1}
+/* появление: заголовок и цифры снизу, по очереди */
+.stats h2,.st{opacity:0;transform:translateY(6rem);transition:opacity .5s ease,transform .8s cubic-bezier(.2,.9,.25,1.05)}
+.stats.on h2,.stats.on .st{opacity:1;transform:none}
+/* при обратной прокрутке гаснут сразу, чтобы не проступать поверх первого экрана */
+.stats:not(.on) h2,.stats:not(.on) .st{transition-duration:.12s;transition-delay:0s}
+.stats.on .st:nth-child(1){transition-delay:.08s}.stats.on .st:nth-child(2){transition-delay:.16s}
+.stats.on .st:nth-child(3){transition-delay:.24s}.stats.on .st:nth-child(4){transition-delay:.32s}
+
+/* ---------- марки со скринами поступлений поверх цифр (реф Кати – марки с перфорацией) ---------- */
+.stamps{position:absolute;left:0;right:0;top:max(0px, (100vh - 95rem) / 2);height:95rem;z-index:16;pointer-events:none}
+.stamp{position:absolute;left:var(--l);top:var(--t);width:var(--w);filter:drop-shadow(0 1.6rem 2.4rem rgba(58,58,58,.28));
+  opacity:0;transform:translateY(-4rem) rotate(calc(var(--r) - 14deg)) scale(1.35);
+  transition:opacity .25s ease,transform .55s cubic-bezier(.25,1.4,.5,1)}
+.stamp.on{opacity:1;transform:rotate(var(--r))}
+.stamp:not(.on){transition-duration:.12s}
+.stamps.labels{z-index:17}
+.stamps.labels .stamp{filter:none}
+.stamps.labels .paper{visibility:hidden}
+.stamps:not(.labels) .lbl{display:none}
+.stamps.labels .lbl{box-shadow:0 .8rem 1.6rem rgba(58,58,58,.22)}
+/* бумага марки: волнистая перфорация по краю – маска из кружков */
+.stamp .paper{--rr:1rem;padding:calc(2.1 * var(--rr));background:var(--paper,#FFFFFF);
+  -webkit-mask:radial-gradient(var(--rr),#0000 98%,#000) round calc(-1.5*var(--rr)) calc(-1.5*var(--rr)) / calc(3*var(--rr)) calc(3*var(--rr)),linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3*var(--rr)) calc(100% - 3*var(--rr));
+          mask:radial-gradient(var(--rr),#0000 98%,#000) round calc(-1.5*var(--rr)) calc(-1.5*var(--rr)) / calc(3*var(--rr)) calc(3*var(--rr)),linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3*var(--rr)) calc(100% - 3*var(--rr))}
+.stamp .pic{position:relative;aspect-ratio:var(--ar);overflow:hidden;background:#F2F2F2}
+.stamp .pic img{display:block;width:100%;height:100%;object-fit:cover}
+/* заглушка, пока нет скринов из папки «скрины поступлений» */
+.stamp .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem;text-align:center;
+  font-size:1.8rem;font-weight:500;line-height:1.15;color:rgba(58,58,58,.55);
+  background:repeating-linear-gradient(135deg,rgba(58,58,58,.05) 0 1.2rem,transparent 1.2rem 2.4rem)}
+.stamp .ph svg{width:4.4rem;height:4.4rem;fill:none;stroke:currentColor;stroke-width:1.6}
+/* плашка-подпись, как зеленые плашки у референса – цвет брендбука */
+.stamp .lbl{position:absolute;left:var(--ll,-2rem);bottom:var(--lb,-2rem);padding:.5rem 1.4rem .9rem;background:var(--lc,#B0F2EB);color:var(--ink);
+  font-size:max(3rem, min(4.6rem, calc(var(--w) * .13)));font-weight:500;letter-spacing:-.05em;line-height:.9;white-space:nowrap;transform:rotate(var(--lr,-4deg))}
+
+/* ---------- графитовая плашка снизу во всю ширину, внутри логотип с параллаксом ---------- */
+.night{position:absolute;inset:-1px;z-index:18;background:var(--ink);overflow:hidden;transform:translateY(calc(var(--nt, 1) * 101%));will-change:transform}
+.night .logo-big{position:absolute;left:50%;top:50%;width:min(64rem, 70vw);margin:0;transform:translate(-50%, calc(-50% + var(--lt, 0px)))}
+.night .logo-big img{display:block;width:100%;height:auto}
+
+/* ---------- облако видео и фото, «налипающее» на логотип (реф Кати – рой карточек вокруг подписи 2026) ---------- */
+.swarm{position:absolute;inset:0;pointer-events:none}
+.sw{position:absolute;left:50%;top:50%;width:22rem;height:16.5rem;margin:-8.25rem 0 0 -11rem;overflow:hidden;background:#2E2E2E;
+  box-shadow:0 1.2rem 3rem rgba(0,0,0,.35);will-change:transform;transform:translate(-200vw,0)}
+.sw video,.sw img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+
+/* ---------- блок 3: бинго страхов – сетка 4×4: мемы, страхи, яркие квадраты брендбука ---------- */
+/* фон блока: белый (решение Кати); ?fears=mint / ?fears=orange – прежние варианты для сравнения.
+   --sq-w – «белые» квадраты, --sq-m – «мятные»: перекрашиваются под фон, чтобы не сливаться */
+.fears{position:relative;margin-top:-1px;padding:12rem 0 14rem;background:var(--fbg);color:var(--ink);--fbg:#FFFFFF;--sq-w:#B0F2EB;--sq-m:#FFAA44}
+.fears.bg-mint{--fbg:#B0F2EB;--sq-w:#FFFFFF;--sq-m:#FFAA44}
+.fears.bg-orange{--fbg:#FFAA44;--sq-w:#FFFFFF;--sq-m:#B0F2EB}
+.fears h2{margin:0 auto 6rem;text-align:center;font-size:6.4rem;font-weight:500;letter-spacing:-.045em;line-height:1}
+.fz-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.6rem}
+.fz{position:relative;aspect-ratio:1;border-radius:3.2rem;overflow:hidden;background:var(--bg);color:var(--fg,var(--ink));
+  transition:transform .45s cubic-bezier(.2,.9,.25,1.1)}
+.fz:hover{transform:translateY(-.8rem) rotate(var(--hr,-1.2deg))}
+/* мем: картинка целиком, при наведении снизу выезжает плашка со страхом */
+.fz.meme{padding:2.8rem}
+.fz.meme img{display:block;width:100%;height:100%;object-fit:cover;border-radius:2rem;transform:rotate(var(--mr,-2deg));box-shadow:0 1.2rem 2.4rem rgba(0,0,0,.18);transition:transform .45s cubic-bezier(.2,.9,.25,1.1)}
+.fz.meme:hover img{transform:rotate(0deg) scale(1.02)}
+.fz.meme .cap{position:absolute;left:1.6rem;right:1.6rem;bottom:1.6rem;padding:1.4rem 1.8rem 1.6rem;border-radius:1.6rem;background:var(--white);color:var(--ink);box-shadow:0 1rem 2rem rgba(0,0,0,.15);
+  font-size:2.2rem;font-weight:500;letter-spacing:-.02em;line-height:1.1;transform:translateY(calc(100% + 2rem));transition:transform .45s cubic-bezier(.2,.9,.25,1.05)}
+.fz.meme:hover .cap,.fz.meme:focus-visible .cap{transform:none}
+/* страх текстом */
+.fz.txt{display:flex;flex-direction:column;justify-content:flex-start;padding:3.6rem}
+.fz.txt p{font-size:3.6rem;font-weight:500;letter-spacing:-.035em;line-height:1.05}
+/* яркий квадрат с фирменной стрелкой или маскотом */
+.fz.brand svg{position:absolute;left:50%;top:50%;width:var(--aw,34%);height:auto;transform:translate(-50%,-50%) rotate(var(--ar,0deg));overflow:visible;transition:transform .6s cubic-bezier(.2,.9,.25,1.1)}
+.fz.brand:hover svg{transform:translate(-50%,-56%) rotate(calc(var(--ar,0deg) + 8deg))}
+.fz.brand .masc-face{position:absolute;left:50%;top:50%;width:52%;transform:translate(-50%,-50%) rotate(-6deg)}
+
+/* временное продолжение после раскрытия – здесь будет блок 2 */
+.after{height:100vh;margin-top:-1px;background:var(--ink)}
+.hero.full{background:var(--orange)}
+.hero.dark{background:var(--ink)}
+
+/* скриншот-режим ?shot – без анимаций */
+.shot *,.shot *::before,.shot *::after{transition:none !important;animation:none !important}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms !important;animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="wrap">
+    <a href="#" class="logo" aria-label="СМИТАП – на главную"><img class="lo" src="../assets/logo-orange.svg" alt="СМИТАП" width="1431" height="482"><img class="lw" src="../assets/logo-white.svg" alt="" width="1431" height="482"></a>
+    <ul class="nav" aria-label="Основное меню">
+      <li><a href="#">ЕГЭ</a></li><li><a href="#">ОГЭ</a></li><li><a href="#">Бесплатная подготовка</a></li><li><a href="#">Блог</a></li><li><a href="#">Банк заданий</a></li>
+    </ul>
+    <div class="hdr-r">
+      <a href="#" class="btn btn-s btn-line">Войти</a>
+      <a href="#" class="btn btn-s btn-or">Подобрать формат</a>
+      <a href="#" class="ic" aria-label="Позвонить"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="scene" id="scene">
+<section class="hero" id="hero" aria-label="Школа СМИТАП">
+  <div class="seg" role="tablist" aria-label="Для кого">
+    <span class="thumb" aria-hidden="true"></span>
+    <button role="tab" aria-selected="true" data-a="kid">Ученик</button>
+    <button role="tab" aria-selected="false" data-a="par">Родитель</button>
+  </div>
+
+  <h1><span>Школа,</span><span class="l2">где учиться&nbsp;– интересно,<span class="mpin"><button class="walker lean" id="walker" type="button" aria-label="Маскот СМИТАП"><svg viewBox="-80 0 1160 1620" aria-hidden="true"><g class="w-all"><g class="w-bob"><g class="w-arm-r"><path d="M850 995 Q893 1100 900 1205" fill="none" stroke="#FFAA44" stroke-width="24" stroke-linecap="round"/><circle cx="905" cy="1238" r="34" fill="#FFAA44"/><circle cx="881" cy="1266" r="13" fill="#FFAA44"/><circle cx="905" cy="1274" r="13" fill="#FFAA44"/><circle cx="929" cy="1266" r="13" fill="#FFAA44"/></g><g class="w-leg-r"><path d="M535 1190 V1574" fill="none" stroke="#FFAA44" stroke-width="24" stroke-linecap="round"/><rect x="397" y="1562" width="162" height="48" rx="24" fill="#FFAA44"/></g><g class="w-leg-l"><path d="M444 1190 V1574" fill="none" stroke="#FFAA44" stroke-width="24" stroke-linecap="round"/><rect x="306" y="1562" width="162" height="48" rx="24" fill="#FFAA44"/></g><image href="../assets/mascot/walker-body.png" x="55" y="11" width="911" height="1204"/><g class="w-arm-l"><path d="M150 995 Q109 1100 105 1205" fill="none" stroke="#FFAA44" stroke-width="24" stroke-linecap="round"/><circle cx="95" cy="1238" r="34" fill="#FFAA44"/><circle cx="71" cy="1266" r="13" fill="#FFAA44"/><circle cx="95" cy="1274" r="13" fill="#FFAA44"/><circle cx="119" cy="1266" r="13" fill="#FFAA44"/></g></g></g></svg></button></span></span><span>а&nbsp;сдавать&nbsp;– <span class="swap" id="easy" style="display:inline">легко!</span></span></h1>
+  <div class="cta">
+    <a href="#" class="btn btn-m btn-dark">Выбрать курс</a>
+    <a href="#" class="btn btn-m btn-dark" id="cta2"><span class="swap" id="cta2t">Попробовать бесплатно</span></a>
+  </div>
+
+
+  <!-- точечные элементы сцены вокруг заголовка -->
+  <div class="deco" style="--dx:-74rem;--dy:23rem;--in:.5s" aria-hidden="true"><span class="d-bar" style="--r0:-3deg;--r1:-1.5deg;--d:6.5s"><i></i><i></i><i></i><b></b></span></div>
+  <div class="deco" style="--dx:27rem;--dy:16.5rem;--in:2.6s" aria-hidden="true"><img class="d-heart" src="../assets/scene/p-heart.webp" alt="" style="--r0:-8deg;--r1:4deg;--d:4.8s"></div>
+  <div class="deco" style="--dx:66rem;--dy:14rem;--in:.8s" aria-hidden="true"><span class="d-90" style="--r0:-12deg;--r1:-7deg;--d:5.6s">90+</span></div>
+  <div class="deco" style="--dx:-60rem;--dy:44rem;--in:1s" aria-hidden="true"><span class="d-100" style="--r0:-14deg;--r1:-6deg;--d:7s">100</span></div>
+  <div class="fan" id="fan"></div>
+  <!-- блок 2 – достижения (ТЗ, «Главная», 2 блок), появляется, когда оранжевый заполнил экран -->
+  <div class="stats" id="stats" aria-label="Достижения СМИТАП">
+    <div class="wrap">
+      <h2>Почему нам можно доверять?</h2>
+      <div class="st-grid">
+        <div class="st"><div class="num"><span data-n="5">5</span>+<small>лет</small></div><p class="cap">в&nbsp;сфере онлайн‑образования</p></div>
+        <div class="st"><div class="num"><span data-n="24000">24&nbsp;000</span>+</div><p class="cap">высокобалльников</p></div>
+        <div class="st"><div class="num"><span data-n="1254">1&nbsp;254</span>+</div><p class="cap">стобалльников</p></div>
+        <div class="st"><div class="num">1<small class="mid">из</small>3</div><p class="cap">каждый третий ученик нашей школы сдал ЕГЭ на&nbsp;80+</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="stamps" id="stamps" aria-label="Наши ученики поступают"></div>
+  <div class="stamps labels" id="stampLabels" aria-hidden="true"></div>
+  <div class="night" id="night" aria-hidden="true" data-hdr="dark"><div class="logo-big"><img src="../assets/logo-orange.svg" alt="" width="1431" height="482"></div><div class="swarm" id="swarm"></div></div>
+</section>
+</div>
+<!-- блок 3 – бинго страхов (ТЗ, «Главная / для учеников», 3 блок): сразу после сцены, без перехода -->
+<section class="fears" id="fears" aria-labelledby="fears-h">
+  <div class="wrap">
+    <h2 id="fears-h">Экзамены и&nbsp;поступление&nbsp;– это сложный этап…</h2>
+    <div class="fz-grid">
+      <figure class="fz meme" tabindex="0" style="--bg:#0966EE;--hr:-1.2deg;--mr:-2.5deg"><img src="../assets/memes/m01-budget.webp" alt="Мем: Дрейк – платное или бюджет" loading="lazy"><figcaption class="cap">Хочу поступить на&nbsp;бюджет, но&nbsp;нужно много баллов…</figcaption></figure>
+      <div class="fz txt" style="--bg:var(--sq-w);--hr:1.2deg"><p>А&nbsp;вдруг на&nbsp;экзамене попадется то, что я&nbsp;не&nbsp;учил?</p></div>
+      <div class="fz brand" style="--bg:#3A3A3A;--hr:-1.5deg" data-arrow="a3" data-c="#FFAA44" data-w="30%" data-r="18deg"></div>
+      <figure class="fz meme" tabindex="0" style="--bg:#FF5E5E;--hr:1.4deg;--mr:2deg"><img src="../assets/memes/m02-vse.webp" alt="Мем: Математическая дама – выучить всё" loading="lazy"><figcaption class="cap">Непонятно, за&nbsp;что хвататься, чтобы не&nbsp;утонуть в&nbsp;материале</figcaption></figure>
+
+      <div class="fz brand" style="--bg:var(--sq-w);--hr:1.2deg"><img class="masc-face" src="../assets/emotions/surprise-clean.webp" alt=""></div>
+      <figure class="fz meme" tabindex="0" style="--bg:#B6D67D;--hr:-1.2deg;--mr:2.5deg"><img src="../assets/memes/m03-fire.webp" alt="Мем: пес в огне – а мы разве считаем?" loading="lazy"><figcaption class="cap">Я&nbsp;не&nbsp;чувствую контроля над своей подготовкой</figcaption></figure>
+      <div class="fz txt" style="--bg:var(--sq-m);--hr:1.4deg"><p>А&nbsp;вдруг я&nbsp;не&nbsp;успею подготовиться?</p></div>
+      <div class="fz brand" style="--bg:#DBB9EE;--hr:-1.4deg" data-arrow="vector" data-c="#3A3A3A" data-w="22%" data-r="35deg"></div>
+
+      <div class="fz txt" style="--bg:var(--sq-w);--hr:-1.2deg"><p>Я&nbsp;не&nbsp;верю в&nbsp;свои силы</p></div>
+      <div class="fz brand" style="--bg:#0966EE;--hr:1.3deg" data-arrow="a1" data-c="#B0F2EB" data-w="30%" data-r="-12deg"></div>
+      <figure class="fz meme" tabindex="0" style="--bg:#FF5E5E;--hr:-1.3deg;--mr:-2deg"><img src="../assets/memes/m04-27.webp" alt="Мем: две кнопки – паника из-за 27 задания" loading="lazy"><figcaption class="cap">Все вокруг уже давно решают сложные варианты, а&nbsp;я&nbsp;нет</figcaption></figure>
+      <div class="fz brand" style="--bg:#9AE0F1;--hr:1.2deg" data-arrow="a4" data-c="#3A3A3A" data-w="32%" data-r="10deg"></div>
+
+      <div class="fz brand" style="--bg:#B6D67D;--hr:1.3deg" data-arrow="a3" data-c="#3A3A3A" data-w="28%" data-r="-24deg"></div>
+      <figure class="fz meme" tabindex="0" style="--bg:#6849AA;--hr:-1.2deg;--mr:2deg"><img src="../assets/memes/m05-bean.webp" alt="Мем: Мистер Бин – а можно сначала попробовать?" loading="lazy"><figcaption class="cap">Учительница сказала, что со&nbsp;мной уже поздно заниматься</figcaption></figure>
+      <div class="fz brand" style="--bg:#FF702D;--hr:1.4deg" data-arrow="vector" data-c="#FFFFFF" data-w="20%" data-r="-30deg"></div>
+      <div class="fz txt" style="--bg:#DBB9EE;--hr:-1.3deg"><p>Я&nbsp;боюсь, что родители во&nbsp;мне разочаруются</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+const Q = new URLSearchParams(location.search);
+if (Q.has('shot')) document.documentElement.classList.add('shot');
+
+/* переключатель ученик / родитель – тексты из ТЗ (вкладки «Главная / для учеников» и «для родителей») */
+const TXT = {
+  kid: { cta:'Попробовать бесплатно', easy:'легко!', sub:'Готовим к&nbsp;ЕГЭ на&nbsp;90+ баллов и&nbsp;к&nbsp;ОГЭ на&nbsp;«5»&nbsp;– с&nbsp;любого уровня в&nbsp;комфортной атмосфере' },
+  par: { cta:'Получить консультацию', easy:'легко', sub:'Поможем вашему ребенку сдать ЕГЭ на&nbsp;90+ баллов и&nbsp;ОГЭ на&nbsp;оценку «5»&nbsp;– с&nbsp;любого уровня в&nbsp;комфортной атмосфере' }
+};
+const seg = document.querySelector('.seg'), thumb = seg.querySelector('.thumb'), hero = document.getElementById('hero');
+function place(btn){ thumb.style.width = btn.offsetWidth + 'px'; thumb.style.transform = `translateX(${btn.offsetLeft}px)`; }
+function setAud(a, instant){
+  const btn = seg.querySelector(`[data-a="${a}"]`);
+  seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b === btn));
+  place(btn);
+  const go = () => { const t = TXT[a]; cta2t.textContent = t.cta; document.getElementById('gsub').innerHTML = t.sub; easy.textContent = t.easy; hero.classList.remove('is-swapping'); };
+  if (instant) return go();
+  hero.classList.add('is-swapping'); setTimeout(go, 250);
+}
+seg.addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.getAttribute('aria-selected') !== 'true') setAud(b.dataset.a); });
+addEventListener('resize', () => place(seg.querySelector('[aria-selected="true"]')));
+
+/* веер тематик из ТЗ (рейтинг и ученики), в центре – чистая оранжевая карточка.
+   Как на сайте клиента: ровный цвет предмета, плоская фирменная стрелка (SVG из брендбука) за фото ученика без фона.
+   Фото сгенерированы (../assets/v6/raw3), фон вырезан – assets/v6/*.webp с прозрачностью.
+   Положения и наклоны повторяют референс: карточки раскиданы, а не симметричны. */
+/* фирменные стрелки из assets/arrows/ встроены контуром – маска по url не работает, если страницу открыть файлом */
+const ARROWS = {"a1": {"vb": "0 0 360.343 720.687", "d": "M306.72 720.115C311.809 719.908 316.894 719.606 321.983 719.314L322.007 719.629L360.343 716.724L355.622 654.371L317.286 657.276L317.319 657.695C241.911 662.478 121.325 657.917 73.4518 590.616C59.2881 570.285 57.7957 542.416 70.2032 520.896C116.764 556.089 175.893 575.133 234.262 573.643C261.844 572.52 290.918 565.813 311.838 546.835C330.005 530.616 338.65 504.644 333.834 480.808C324.986 437.531 280.243 414.71 240.315 406.673C184.189 395.462 123.492 404.315 73.9991 433.438C63.2583 412.686 61.3653 387.313 69.5236 365.373C78.9095 340.622 101.227 323.53 124.399 312.306C142.179 352.498 182.414 380.191 225.679 385.705C252.765 389.308 282.41 384.912 304.241 367.552C342.153 337.868 335.585 278.924 296.781 253.046C258.506 226.729 208.494 228.852 164.789 237.595C159.402 199.818 159.52 161.461 161.578 123.429L191.794 173.511L256.736 173.657L159.818 0.0990229H154.152L154.19 0C143.44 0.0471625 121.807 0.0471625 111.061 0L111.094 0.0990229H105.429L4.33705 173.657L69.2829 173.511L100.986 120.972H101.114C99.2251 165.776 99.6641 211.024 107.412 255.319C69.297 271.562 33.8826 298.751 16.5178 337.207C-3.28315 380.597 1.3866 433.523 26.8672 473.615C-24.0751 540.77 1.59417 625.866 68.8343 670.373C138.251 716.413 225.542 722.973 306.72 720.115ZM208.886 290.427C225.259 289.554 242.449 290.323 257.514 297.36C263.241 300.256 269.672 304.467 270.829 311.259C271.301 314.088 271.589 317.328 269.884 319.804C262.274 328.086 249.422 328.6 238.866 328.228C215.802 326.69 192.852 314.442 181.342 294.007C190.434 292.207 199.635 291.011 208.886 290.427ZM121.231 478.704C154.615 463.848 192.852 459.802 228.635 467.112C243.563 470.635 264.988 476.79 272.972 490.877C277.15 507.936 243.355 511.652 231.788 512.1C192.082 513.076 152.184 501.059 118.738 479.86C119.564 479.464 120.4 479.082 121.231 478.704Z"}, "a3": {"vb": "0 0 354.436 720.687", "d": "M301.692 720.115C306.698 719.908 311.699 719.606 316.705 719.314L316.728 719.629L354.436 716.724L349.792 654.371L312.085 657.276L312.117 657.695C237.945 662.478 119.336 657.917 72.2477 590.616C58.3161 570.285 56.8483 542.416 69.0523 520.896C114.85 556.089 173.01 575.133 230.422 573.643C257.551 572.52 286.149 565.813 306.725 546.835C324.595 530.616 333.098 504.644 328.361 480.808C319.659 437.531 275.649 414.71 236.376 406.673C181.169 395.462 121.468 404.315 72.786 433.438C62.2212 412.686 60.3593 387.313 68.3839 365.373C77.6159 340.622 99.5672 323.53 122.359 312.306C139.848 352.498 179.423 380.191 221.98 385.705C248.621 389.308 277.78 384.912 299.254 367.552C336.544 337.868 330.084 278.924 291.916 253.046C254.268 226.729 205.076 228.852 162.088 237.595C156.789 199.818 156.905 161.461 158.93 123.429L188.65 173.511L252.527 173.657L157.198 0.0990229H151.625L151.662 0C141.088 0.0471625 119.81 0.0471625 109.24 0L109.273 0.0990229H103.7L4.26595 173.657L68.1472 173.511L99.3304 120.972H99.456C97.5985 165.776 98.0303 211.024 105.651 255.319C68.161 271.562 33.3271 298.751 16.247 337.207C-3.22933 380.597 1.36387 433.523 26.4268 473.615C-23.6805 540.77 1.56804 625.866 67.7059 670.373C135.985 716.413 221.845 722.973 301.692 720.115ZM205.461 290.427C221.566 289.554 238.474 290.323 253.293 297.36C258.926 300.256 265.251 304.467 266.389 311.259C266.853 314.088 267.136 317.328 265.46 319.804C257.974 328.086 245.333 328.6 234.95 328.228C212.264 326.69 189.691 314.442 178.369 294.007C187.312 292.207 196.362 291.011 205.461 290.427ZM119.243 478.704C152.08 463.848 189.691 459.802 224.886 467.112C239.57 470.635 260.644 476.79 268.497 490.877C272.607 507.936 239.366 511.652 227.988 512.1C188.934 513.076 149.689 501.059 116.792 479.86C117.604 479.464 118.426 479.082 119.243 478.704Z"}, "a4": {"vb": "0 0 389.88 667.521", "d": "M244.465 666.716C280.652 664.963 316.698 660.715 352.384 654.579V654.639L389.88 648.076L379.402 587.868C309.569 600.746 238.16 611.144 167.036 606.01C136.248 603.408 104.416 599.447 76.6311 585.05C67.2056 579.945 55.3616 571.244 59.5247 559.013C62.6307 546.472 76.4954 541.803 87.5066 538.385C134.124 526.848 182.725 531.489 230.273 528.957C259.654 527.514 290.11 525.545 317.184 513.018C335.483 504.626 351.05 489.273 357.033 469.733C363.937 447.184 360.887 420.879 347.065 401.522C326.193 372.456 287.794 366.516 254.447 365.152C216.404 362.93 177.645 368.584 140.064 360.797C133.071 358.833 123.585 356.372 122.799 347.769C120.507 339.129 129.479 333.995 135.822 330.362C158.775 318.694 184.647 314.892 209.682 310.124C227.598 306.842 246.313 304.259 262.133 294.588C304.727 270.679 312.128 210.615 276.61 177.025C259.518 159.904 238.567 147.458 218.93 133.581C198.231 119.179 178.468 103.301 161.03 85.041L218.78 99.3867L264.383 53.9126L74.7737 0L70.7931 3.97065L70.7511 3.8768C63.2668 11.4574 48.0973 26.6466 40.5382 34.1569L40.6318 34.204L36.6695 38.1889L87.5578 231.149L132.931 185.445L119.071 129.385C137.146 147.669 157.082 164.077 178.15 178.812C195.864 191.615 215.08 202.43 231.644 216.785C240.377 223.104 243.656 234.843 234.193 242.156C228.496 246.544 221.236 247.703 214.393 249.222C206.029 250.923 197.623 252.367 189.236 253.989C167.803 258.044 146.286 262.643 125.901 270.589C101.432 279.891 77.033 296.144 68.0518 321.91C56.8535 353.17 70.4516 391.49 100.01 407.195C138.699 427.822 184.498 422.196 226.774 422.726C249.695 423.364 274.954 421.282 296.027 431.746C301.799 434.728 303.044 441.638 302.735 447.601C303.306 466.935 255.753 468.96 241.598 470.301C180.162 475.054 99.6544 464.464 44.3973 493.014C12.2758 509 -6.68277 547.396 2.18139 582.533C7.42505 604.309 23.3711 621.936 42.0443 633.496C98.817 667.536 179.778 669.285 244.465 666.716Z"}, "vector": {"vb": "0 0 260 668", "d": "M200.343 598.291C96.8517 536.294 41.8746 426.241 62.5577 306.885C76.0414 235.704 118.229 171.3 174.126 125.561L159.901 182.619L205.664 228.349L259.92 38.2151L255.924 34.2234L256.018 34.1808C248.389 26.6757 233.103 11.4639 225.545 3.879L225.498 3.97291L221.488 0L27.3014 51.0299L73.2955 96.5298L131.943 82.0779C68.7241 136.959 21.2811 211.94 5.53294 294.413C-7.46004 365.711 2.47116 441.401 34.897 506.405C70.0545 577.905 127.367 628.04 195.578 667.521L228.371 615.764L200.343 598.207V598.291Z"}};
+const STAR = '<svg viewBox="0 0 24 24"><path d="M12 1.8l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.6l-6.4 3.6 1.5-7.1L1.7 9.2l7.2-.8z"/></svg>';
+const CARDS = [
+  { img:'students', big:'120&nbsp;000+', small:'учеников', bg:'#B6D67D', fg:'#3A3A3A', x:-66, y:3, r:-13, z:1, imgT:'scaleX(-1) translateY(7.5rem)',
+    arr:{ src:'a3', c:'#FF9B4C', l:27, t:4, w:12, h:24.5, r:32 } },
+  { img:'',         big:'5/5',           small:'Яндекс',   bg:'#3A3A3A', fg:'#FFFFFF', x:-35, y:7,  r:14,  z:2, stars:5,
+    arr:{ src:'vector', c:'#B0F2EB', l:19, t:4, w:10.5, h:27, r:40 } },
+  { img:'', big:'', small:'', bg:'#FFAA44', fg:'#3A3A3A', x:-1, y:2, r:-9, z:3 },
+  { img:'reviews',  big:'4,9/5',         small:'Отзовик',  bg:'#DBB9EE', fg:'#3A3A3A', x:33,  y:6,  r:14,  z:4,
+    arr:{ src:'a1', c:'#FFAA44', l:15, t:7, w:12, h:24, r:-18 } },
+  { img:'medal',    big:'4,9/5',         small:'Т-Банк',   bg:'#0966EE', fg:'#FFFFFF', x:66,  y:11, r:-8, z:3, tl:14.5, imgT:'translateX(6rem)',
+    arr:{ src:'a4', c:'#B0F2EB', l:22, t:9, w:12, h:21, r:12 } }
+];
+const fan = document.getElementById('fan');
+fan.innerHTML = CARDS.map((c, i) => {
+  const dir = Math.sign(c.x) * (Math.abs(c.x) > 50 ? 1.3 : 1);
+  const st = `--dir:${dir};--x:${c.x}rem;--y:${c.y}rem;--r:${c.r}deg;--bg:${c.bg};--fg:${c.fg};z-index:${c.z};transition-delay:${0.12 + Math.abs(i-2)*0.08}s`;
+  const A = c.arr;
+  const arr = A ? `<svg class="arr" viewBox="${ARROWS[A.src].vb}" preserveAspectRatio="none" aria-hidden="true" style="left:${A.l}rem;top:${A.t}rem;width:${A.w}rem;height:${A.h}rem;transform:rotate(${A.r}deg)"><path fill="${A.c}" d="${ARROWS[A.src].d}"/></svg>` : '';
+  const stars = c.stars ? `<div class="stars">${STAR.repeat(c.stars)}</div>` : '';
+  const img = c.img ? `<img src="../assets/v6/${c.img}.webp" alt=""${c.imgT ? ` style="transform:${c.imgT}"` : ''}>` : '';
+  const sub = i === 2 ? `<p class="g-sub swap" id="gsub">${TXT.kid.sub}</p>` : '';
+  const txt = c.big ? `<div class="t"${c.tl ? ` style="left:${c.tl}rem"` : ''}><b>${c.big}</b><span>${c.small}</span></div>` : '';
+  const lbl = c.big ? ` aria-label="${c.big.replace('&nbsp;',' ')} – ${c.small}"` : ' aria-hidden="true" tabindex="-1"';
+  return `<a href="#" class="card" style="${st}"${lbl}><div class="in">${arr}${img}${stars}${txt}${sub}</div></a>`;
+}).join('');
+
+/* маскот идет справа налево к концу средней строки: шагает (ноги попеременно, руки в противоход),
+   дошел – облокачивается на буквы. Клик – машет свободной рукой */
+const walker = document.getElementById('walker');
+function walkIn(){
+  if (Q.has('shot') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;   /* сразу в финальной позе */
+  const from = innerWidth - walker.getBoundingClientRect().left + 40;   /* старт – за правым краем экрана */
+  walker.classList.remove('lean'); walker.classList.add('walking');
+  /* скорость = длина шага: за полшага (0,3 с) тело проходит 2·L·sin30° = L (нога 384 ед. из 1620) – опорная стопа не скользит */
+  const px = walker.getBoundingClientRect().height / 1620, speed = 384 * px / .3;
+  const anim = walker.animate([{ transform:`translateX(${from}px)` }, { transform:'translateX(0)' }],
+    { duration: from / speed * 1000, easing:'linear', delay:350, fill:'backwards' });
+  anim.onfinish = () => { walker.classList.remove('walking'); walker.classList.add('lean'); };
+}
+walker.addEventListener('click', () => { if (!walker.classList.contains('lean')) return; walker.classList.remove('wave'); void walker.offsetWidth; walker.classList.add('wave'); });
+walker.addEventListener('animationend', e => { if (e.animationName === 'w-wave') walker.classList.remove('wave'); });
+addEventListener('load', walkIn);
+
+/* блок 2: инфографика появляется, когда оранжевый заполнил экран; числа набегают */
+const stats = document.getElementById('stats');
+const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');   /* 1\u00A0254, 24\u00A0000 – с неразрывным пробелом */
+let statsOn = null, countRaf = 0;
+function showStats(on){
+  if (on === statsOn) return; statsOn = on;
+  stats.classList.toggle('on', on);
+  cancelAnimationFrame(countRaf);
+  const nums = stats.querySelectorAll('[data-n]');
+  if (!on || Q.has('shot')) { nums.forEach(el => el.textContent = fmt(on ? +el.dataset.n : 0)); return; }
+  const t0 = performance.now();
+  const step = now => {
+    const t = Math.min(1, (now - t0 - 250) / 1400), k = t <= 0 ? 0 : 1 - Math.pow(1 - t, 3);
+    nums.forEach(el => el.textContent = fmt(el.dataset.n * k));
+    if (t < 1) countRaf = requestAnimationFrame(step);
+  };
+  countRaf = requestAnimationFrame(step);
+}
+
+/* марки со скринами поступлений: появляются по одной, пока экран с цифрами держится.
+   img – скрины из папки «скрины поступлений» (ТЗ, 2 блок), лежат в assets/v6/admissions/; на скрине ВШЭ срезан номер заявления.
+   Плашка – вуз со скрина. */
+const STAMP_STEP = .2;   /* доля высоты экрана прокрутки на одну марку */
+const STAMPS = [   /* t – от верха экрана, ниже строки фактов (она кончается около 38 rem) */
+  { img:'vshe.webp',  ar:'1087/880',  w:40, l:'7%',  t:'47.5rem', r:-7, lbl:'ВШЭ',            lc:'#B0F2EB', ll:'-2rem', lb:'-1.8rem', lr:'-5deg' },
+  { img:'finu.webp',  ar:'1074/942',  w:30, l:'28%', t:'51rem', r:4,  lbl:'Финуниверситет', lc:'#DBB9EE', ll:'auto',  lb:'-2rem',   lr:'4deg', right:1 },
+  { img:'mgimo.webp', ar:'1093/1280', w:34, l:'51%', t:'46.5rem', r:-3, lbl:'МГИМО',          lc:'#FFFFFF', ll:'-2rem', lb:'-1.8rem', lr:'-4deg' },
+  { img:'chat.webp',  ar:'888/408',   w:44, l:'67%', t:'54.5rem', r:6,  lbl:'на&nbsp;бюджет!', lc:'#9AE0F1', ll:'-2.2rem', lb:'-2rem', lr:'-3deg', top:1 },
+  /* вторая порция скринов (папка drive-download-20261127T133855Z): ложатся поверх первых, кучкой */
+  { img:'msu.webp',    ar:'628/710',   w:21, l:'19%', t:'44rem', r:6,  lbl:'МГУ',          lc:'#FFFFFF', ll:'-2rem', lb:'-1.8rem', lr:'-4deg' },
+  { img:'mifi.webp',   ar:'1000/1033', w:24, l:'36.5%', t:'50rem', r:-5, lbl:'МИФИ',         lc:'#B0F2EB', ll:'auto',  lb:'-1.8rem', lr:'4deg', right:1 },
+  { img:'ranepa.webp', ar:'1000/858',  w:36, l:'76%', t:'44rem', r:4,  lbl:'РАНХиГС',      lc:'#DBB9EE', ll:'-2rem', lb:'-1.8rem', lr:'-4deg' },
+  { img:'msal.webp',   ar:'610/692',   w:20, l:'1.5%', t:'45rem', r:-6, lbl:'МГЮА',         lc:'#9AE0F1', ll:'auto',  lb:'-1.8rem', lr:'3deg', right:1 },
+  { img:'spbu.webp',   ar:'598/612',   w:22, l:'61.5%', t:'56rem', r:5,  lbl:'СПбГУ',        lc:'#FFFFFF', ll:'-2rem', lb:'-1.8rem', lr:'-4deg' },
+  { img:'reu.webp',    ar:'608/548',   w:28, l:'84%', t:'61rem', r:-4, lbl:'Плехановский', lc:'#B0F2EB', ll:'auto',  lb:'-1.8rem', lr:'4deg', right:1 }
+];
+const stampsBox = document.getElementById('stamps'), night = document.getElementById('night');
+const PH_ICON = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>';
+stampsBox.innerHTML = STAMPS.map(m => {
+  const pic = m.img ? `<img src="../assets/v6/admissions/${m.img}" alt="Скрин о поступлении: ${m.lbl.replace('&nbsp;', ' ')}">` : `<div class="ph">${PH_ICON}скрин поступления</div>`;
+  const lblPos = (m.right ? `right:-2rem;left:auto;` : '') + (m.top ? `top:-2rem;bottom:auto;` : '');
+  return `<figure class="stamp" style="--l:${m.l};--t:${m.t};--w:${m.w}rem;--r:${m.r}deg;--ar:${m.ar}"><div class="paper"><div class="pic">${pic}</div></div>`
+       + `<figcaption class="lbl" style="--lc:${m.lc};--ll:${m.ll};--lb:${m.lb};--lr:${m.lr};${lblPos}">${m.lbl}</figcaption></figure>`;
+}).join('');
+/* подписи – отдельным верхним слоем: «двойник» каждой марки с невидимой бумагой и видимой плашкой,
+   поэтому плашка движется вместе со своей маркой, но всегда лежит поверх всех марок (как наклейка) */
+const labelsBox = document.getElementById('stampLabels');
+labelsBox.innerHTML = stampsBox.innerHTML.replace(/<img [^>]*>/g, '');
+const stampEls = [...stampsBox.children, ...labelsBox.children], NST = STAMPS.length;
+function showStamps(n){ stampEls.forEach((el, i) => el.classList.toggle('on', (i % NST) < n)); }
+
+/* облако: видео и фото с smitup.ru (ролик «Онлайн-школа СМИТАП» с Kinescope нарезан на клипы, GIF учеников, фото преподавателей).
+   Копии в разнобой – временно, потом заменим. Карточки слетаются со всех сторон к логотипу, курсор их расталкивает, они снова налипают. */
+const swRem = () => parseFloat(getComputedStyle(document.documentElement).fontSize);
+const SWARM_MEDIA = [
+  ...Array.from({length:14}, (_, i) => 'v' + String(i+1).padStart(2,'0') + '.mp4'), 'g01.mp4', 'g02.mp4',
+  ...Array.from({length:15}, (_, i) => 'p' + String(i+1).padStart(2,'0') + '.webp')
+];
+const swarmBox = document.getElementById('swarm');
+const SW = { on:false, t0:0, raf:0, mx:1e6, my:1e6, cx:1e6, cy:1e6, cards:[] };
+(function buildSwarm(){
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  /* фото преподавателей – только 8 из 46 карточек, остальное – видео (копии в разнобой) */
+  const vids = SWARM_MEDIA.filter(m => m.endsWith('.mp4')), photos = SWARM_MEDIA.filter(m => !m.endsWith('.mp4')).slice(0, 8);
+  const N = 46, pool = [...photos, ...Array.from({length:N - photos.length}, (_, i) => vids[i % vids.length])];
+  const media = pool.map(m => [m, rnd()]).sort((a, b) => a[1] - b[1]).map(a => a[0]);
+  const order = Array.from({length:N}, (_, i) => i).sort(() => rnd() - .5);
+  for (let i = 0; i < N; i++){
+    const m = media[i % media.length], el = document.createElement('div');
+    el.className = 'sw';
+    el.innerHTML = m.endsWith('.mp4') ? `<video src="../assets/v6/swarm/${m}" muted loop playsinline preload="metadata"></video>` : `<img src="../assets/v6/swarm/${m}" alt="" loading="lazy">`;
+    swarmBox.appendChild(el);
+    /* дом – точка на «подсолнухе» внутри эллипса: плотнее к центру, так логотип закрыт целиком */
+    const k = Math.sqrt((i + .5) / N), a = i * 2.39996;
+    const c = { el, hx: Math.cos(a) * k * 64 + (rnd() - .5) * 6, hy: Math.sin(a) * k * 33 + (rnd() - .5) * 5, hr: (rnd() - .5) * 46,
+      out: a + (rnd() - .5) * .8, delay: order[i] * 28, x:0, y:0, r:0, vx:0, vy:0, vr:0, vid: el.querySelector('video') };
+    el.style.zIndex = Math.floor(rnd() * 50);
+    SW.cards.push(c);
+  }
+  placeOut(); SW.cards.forEach(c => paint(c));
+})();
+function placeOut(){   /* старт – за краем экрана, по лучу от центра через «дом» карточки */
+  const R = swRem(), far = Math.max(innerWidth, innerHeight) * .85;
+  SW.cards.forEach(c => { c.sx = Math.cos(c.out) * far / R; c.sy = Math.sin(c.out) * far / R; c.sr = c.hr + (c.out > 0 ? 40 : -40);
+    if (!SW.on) { c.x = c.sx; c.y = c.sy; c.r = c.sr; } });
+}
+function paint(c){ const R = swRem(); c.el.style.transform = `translate(${(c.x * R).toFixed(1)}px, ${(c.y * R).toFixed(1)}px) rotate(${c.r.toFixed(2)}deg)`; }
+function swarmTick(now){
+  SW.raf = 0; const R = swRem(), RR = 40, el = now - SW.t0; let moving = false;
+  SW.cx += (SW.mx - SW.cx) * .06; SW.cy += (SW.my - SW.cy) * .06;   /* курсор сглажен – облако реагирует плавно */
+  for (const c of SW.cards){
+    let tx, ty, tr;
+    if (SW.on && el > c.delay){
+      tx = c.hx; ty = c.hy; tr = c.hr;
+      /* отталкивание от курсора: считается от «дома», чтобы карточки не дрожали */
+      const dx = c.hx - SW.cx, dy = c.hy - SW.cy, d = Math.hypot(dx, dy) || .001;
+      if (d < RR){ const f = Math.pow((RR - d) / RR, .7); tx += dx / d * f * RR; ty += dy / d * f * RR; tr += (dx > 0 ? 1 : -1) * f * 10; }
+    } else { tx = c.sx; ty = c.sy; tr = c.sr; }
+    c.vx = (c.vx + (tx - c.x) * .018) * .86; c.vy = (c.vy + (ty - c.y) * .018) * .86; c.vr = (c.vr + (tr - c.r) * .018) * .86;   /* мягкая пружина, без отскоков */
+    c.x += c.vx; c.y += c.vy; c.r += c.vr;
+    if (Math.abs(tx - c.x) + Math.abs(ty - c.y) + Math.abs(c.vx) + Math.abs(c.vy) > .02) moving = true;
+    paint(c);
+  }
+  if (moving || SW.on) SW.raf = requestAnimationFrame(swarmTick);
+  else SW.cards.forEach(c => c.vid && c.vid.pause());
+}
+function setSwarm(on, instant){
+  if (on === SW.on && !instant) return;
+  SW.on = on; SW.t0 = performance.now();
+  if (on) SW.cards.forEach(c => { if (c.vid) { c.vid.preload = 'auto'; c.vid.play().catch(() => {}); } });
+  if (instant) SW.cards.forEach(c => { c.x = on ? c.hx : c.sx; c.y = on ? c.hy : c.sy; c.r = on ? c.hr : c.sr; c.vx = c.vy = c.vr = 0; c.delay = on ? 0 : c.delay; paint(c); });
+  if (!SW.raf) SW.raf = requestAnimationFrame(swarmTick);
+}
+addEventListener('pointermove', e => {
+  if (!SW.on) return; const r = hero.getBoundingClientRect(), R = swRem();
+  SW.mx = (e.clientX - r.left - r.width / 2) / R; SW.my = (e.clientY - r.top - r.height / 2) / R;
+  if (SW.cx > 1e5) { SW.cx = SW.mx; SW.cy = SW.my; }   /* курсор только что появился – без долгого «подлета» из бесконечности */
+}, { passive:true });
+document.addEventListener('pointerleave', () => { SW.mx = SW.my = 1e6; SW.cx = SW.cy = 1e6; });
+addEventListener('resize', placeOut);
+
+/* раскрытие оранжевой карточки по скроллу: из наклоненной карточки веера – в весь экран */
+const scene = document.getElementById('scene');
+const grow = fan.children[2], growIn = grow.querySelector('.in');
+const remPx = () => parseFloat(getComputedStyle(document.documentElement).fontSize);
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+let raf = 0;
+function upd(){
+  raf = 0;
+  const run = innerHeight * 1.1;                                     /* раскрытие – первые 110% экрана прокрутки */
+  const p = Math.min(1, Math.max(0, -scene.getBoundingClientRect().top / run));
+  showStats(p >= 1);
+  /* марки: после 30% удержания – по одной на каждые 28% высоты экрана прокрутки */
+  const sc = -scene.getBoundingClientRect().top - innerHeight * 1.4;
+  showStamps(sc < 0 ? 0 : Math.min(STAMPS.length, Math.floor(sc / (innerHeight * STAMP_STEP)) + 1));
+  /* графитовая плашка: после марок и удержания едет снизу (90% экрана прокрутки); логотип внутри отстает – параллакс */
+  const nRaw = (-scene.getBoundingClientRect().top - innerHeight * (1.4 + STAMP_STEP * STAMPS.length + .3)) / (innerHeight * .9);
+  const n = Math.min(1, Math.max(0, nRaw)), ne = 1 - Math.pow(1 - n, 2);
+  night.style.setProperty('--nt', 1 - ne);
+  night.style.setProperty('--lt', (-(1 - ne) * innerHeight * .62) + 'px');   /* плашка проходит экран, логотип – только 38% этого пути */
+  hero.classList.toggle('dark', n >= .99);
+  setSwarm(n >= 1);                                                   /* облако слетается, когда экран стал графитовым */
+  /* механика (Катя): 1) всё разлетается – боковые карточки в стороны, заголовок с кнопками вверх,
+     оранжевая выпрямляется и чуть едет вниз; 2) оранжевая стоит на месте и растягивается на весь экран */
+  const R = remPx(), W = hero.clientWidth, H = hero.clientHeight, C = CARDS[2];
+  const seg01 = (a, b) => ease(Math.min(1, Math.max(0, (p - a) / (b - a))));
+  const away = seg01(0, .4), stretch = seg01(.35, 1);
+  fan.style.setProperty('--spread', (away * 115) + 'rem');
+  fan.style.setProperty('--spin', (away * 14) + 'deg');
+  hero.style.setProperty('--lift', (-away * 32 * R) + 'px');
+  hero.style.setProperty('--fade', 1 - away);
+  growIn.style.setProperty('--gs', Math.max(0, 1 - away * 1.8));
+  hero.classList.toggle('full', p >= .98);                          /* под раскрытой карточкой – тоже оранжевый, без полосы на стыке */
+  if (p <= 0) { grow.classList.remove('grow'); grow.removeAttribute('style'); grow.setAttribute('style', grow.dataset.st); growIn.style.borderRadius = ''; return; }
+  grow.classList.add('grow');
+  const w = lerp(44*R, W + 4, stretch), h = lerp(80*R, Math.max(80*R, H + 4), stretch);   /* +4 px запаса от сглаживания края */
+  const ty = lerp(lerp(C.y*R, 7*R, away), -fan.offsetTop - 2, stretch);                   /* вниз на 7 rem, затем верх тянется к краю экрана */
+  grow.style.width = w + 'px'; grow.style.height = h + 'px'; grow.style.marginLeft = (-w/2) + 'px';
+  grow.style.transform = `translate(${lerp(C.x*R, 0, away)}px, ${ty}px) rotate(${lerp(C.r, 0, away)}deg)`;
+  growIn.style.borderRadius = lerp(2.4*R, 0, stretch) + 'px';
+}
+grow.dataset.st = grow.getAttribute('style');
+addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(upd); }, { passive:true });
+addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(upd); });
+
+if (Q.has('fears')) document.getElementById('fears').classList.add('bg-' + Q.get('fears'));
+/* шапка: что сейчас под ней – светлое или темное (data-hdr="dark"); проверка по трем точкам вдоль шапки */
+const hdr = document.querySelector('.hdr');
+let hdrRaf = 0;
+function hdrTheme(){
+  hdrRaf = 0;
+  const r = hdr.querySelector('.wrap').getBoundingClientRect(), y = r.top + r.height / 2;
+  let darkVotes = 0;
+  for (const x of [r.left + r.width * .2, r.left + r.width * .5, r.left + r.width * .8]){
+    const under = document.elementsFromPoint(x, y).find(el => !hdr.contains(el));
+    if (under && under.closest('[data-hdr="dark"]')) darkVotes++;
+  }
+  hdr.classList.toggle('on-dark', darkVotes >= 2);
+}
+addEventListener('scroll', () => { if (!hdrRaf) hdrRaf = requestAnimationFrame(hdrTheme); }, { passive:true });
+addEventListener('resize', () => { if (!hdrRaf) hdrRaf = requestAnimationFrame(hdrTheme); });
+addEventListener('load', hdrTheme);
+
+/* блок 3: фирменные стрелки в ярких квадратах – тем же контуром из брендбука */
+document.querySelectorAll('.fz.brand[data-arrow]').forEach(el => {
+  const A = ARROWS[el.dataset.arrow];
+  el.style.setProperty('--aw', el.dataset.w); el.style.setProperty('--ar', el.dataset.r);
+  el.insertAdjacentHTML('beforeend', `<svg viewBox="${A.vb}" aria-hidden="true"><path fill="${el.dataset.c}" d="${A.d}"/></svg>`);
+});
+
+addEventListener('load', () => {
+  setAud(Q.has('par') ? 'par' : 'kid', true);
+  if (Q.has('shot')) fan.classList.add('in');
+  else requestAnimationFrame(() => requestAnimationFrame(() => fan.classList.add('in')));
+  /* после раздачи убираем задержки, чтобы ховер был мгновенным */
+  setTimeout(() => { fan.querySelectorAll('.card').forEach(c => { if (c !== grow || !c.classList.contains('grow')) c.style.transitionDelay = '0s'; }); fan.classList.add('dealt');
+    /* исходный вид оранжевой – из сборки (не текущий: к этому моменту страница может быть уже прокручена) */
+    grow.dataset.st = grow.dataset.st.replace(/transition-delay:[^;]+/, 'transition-delay:0s'); }, Q.has('shot') ? 0 : 1600);
+  upd();   /* браузер мог восстановить прокрутку при перезагрузке – сразу привести сцену в нужное состояние */
+  /* тест: ?p=0..1 – прокрутить сцену до нужной доли раскрытия */
+  if (Q.has('p')) { scrollTo(0, innerHeight * 1.1 * parseFloat(Q.get('p'))); upd(); }
+  /* тест: ?stats – сразу экран с инфографикой */
+  if (Q.has('stats')) { scrollTo(0, innerHeight * 1.3); upd(); }
+  /* тест: ?night=0..1 – доля выезда графитовой плашки */
+  if (Q.has('night')) { scrollTo(0, innerHeight * (1.4 + STAMP_STEP * STAMPS.length + .3 + .9 * parseFloat(Q.get('night')))); upd(); }
+  /* тест: ?swarm – облако уже собрано */
+  if (Q.has('swarm')) { scrollTo(0, innerHeight * (1.4 + STAMP_STEP * STAMPS.length + .3 + .9 + .3)); upd(); if (Q.has('shot')) setSwarm(true, true); }
+  /* тест: ?stamps=N – экран с N марками */
+  if (Q.has('stamps')) { scrollTo(0, innerHeight * (1.4 + STAMP_STEP * (parseInt(Q.get('stamps')) - .5))); upd(); }
+});
+</script>
+</body>
+</html>
