@@ -506,19 +506,16 @@ function flyMascot(toWidget){
   j.appendChild(walker.querySelector('svg').cloneNode(true)); document.body.appendChild(j);
   const A = { x: src.left, y: src.top }, B = { x: dst.left, y: dst.top };
   const mid = { x: (A.x + B.x) / 2 + 40, y: Math.min(A.y, B.y) - innerHeight * .22 };
-  const fr = toWidget
-    ? [ { transform:`translate(${A.x}px,${A.y}px) rotate(0) scale(1)` },
-        { transform:`translate(${A.x}px,${A.y + 18}px) scale(1.08,.86)`, offset:.12 },
-        { transform:`translate(${mid.x}px,${mid.y}px) rotate(200deg) scale(.9)`, offset:.55 },
-        { transform:`translate(${B.x}px,${B.y}px) rotate(360deg) scale(.75)`, offset:.9 },
-        { transform:`translate(${B.x}px,${B.y + 80}px) rotate(360deg) scale(.7)`, opacity:0 } ]
-    : [ { transform:`translate(${B.x}px,${B.y + 80}px) rotate(0) scale(.7)`, opacity:0 },
-        { transform:`translate(${B.x}px,${B.y}px) rotate(0) scale(.75)`, opacity:1, offset:.12 },
-        { transform:`translate(${mid.x}px,${mid.y}px) rotate(-160deg) scale(.9)`, offset:.5 },
-        { transform:`translate(${A.x}px,${A.y}px) rotate(-360deg) scale(1)` } ];
+  /* один и тот же путь в обе стороны: вперед – точное зеркало прыжка назад (без растворения поверх виджета) */
+  const back = [
+    { transform:`translate(${B.x}px,${B.y + 240}px) rotate(0) scale(.75)`, offset:0 },
+    { transform:`translate(${B.x}px,${B.y}px) rotate(0) scale(.75)`, offset:.15 },
+    { transform:`translate(${mid.x}px,${mid.y}px) rotate(-160deg) scale(.9)`, offset:.55 },
+    { transform:`translate(${A.x}px,${A.y}px) rotate(-360deg) scale(1)`, offset:1 } ];
+  const fr = toWidget ? back.slice().reverse().map(k => ({ ...k, offset: 1 - k.offset })) : back;
   jumpAnim && jumpAnim.cancel();
-  jumpAnim = j.animate(fr, { duration: toWidget ? 900 : 800, easing:'cubic-bezier(.45,.05,.4,1)', fill:'forwards' });
-  if (toWidget){ walker.classList.add('gone'); setTimeout(() => wEl.classList.add('in'), 520); }
+  jumpAnim = j.animate(fr, { duration: 850, easing:'cubic-bezier(.45,.05,.4,1)', fill:'forwards' });
+  if (toWidget){ walker.classList.add('gone'); setTimeout(() => wEl.classList.add('in'), 760); }   /* виджет выглядывает, когда маскот уже нырнул за край */
   else { wEl.classList.remove('in'); }
   jumpAnim.onfinish = () => { j.remove(); if (!toWidget) walker.classList.remove('gone'); };
   jumpAnim.oncancel = () => j.remove();
